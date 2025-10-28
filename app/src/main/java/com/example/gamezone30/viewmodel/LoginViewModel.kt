@@ -3,7 +3,6 @@ package com.example.gamezone30.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-// ¡CAMBIO! Importamos el Repositorio de Usuario
 import com.example.gamezone30.data.repository.UserRepository
 import com.example.gamezone30.data.session.SessionPreferencesRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,7 +11,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-// El "Estado" de la UI de Login (sigue igual)
 data class LoginUiState(
     val email: String = "",
     val password: String = "",
@@ -24,18 +22,13 @@ data class LoginUiState(
     val rememberSession: Boolean = false
 )
 
-// El "Cerebro" de la UI de Login
 class LoginViewModel(
     private val sessionPreferencesRepository: SessionPreferencesRepository,
-    // ¡CAMBIO! Ahora pedimos también el UserRepository
     private val userRepository: UserRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
-
-    // (onEmailChange, onPasswordChange, onRememberSessionChange...
-    // ...siguen exactamente iguales que antes, no hace falta repetirlos)
 
     fun onEmailChange(email: String) {
         _uiState.update { it.copy(email = email, emailError = null, generalError = null) }
@@ -49,10 +42,6 @@ class LoginViewModel(
         _uiState.update { it.copy(rememberSession = remember) }
     }
 
-
-    /**
-     * ¡CAMBIO! La lógica de Submit ahora es real.
-     */
     fun onSubmit() {
         val state = _uiState.value
         val emailError = if (state.email.isBlank()) "El correo no puede estar vacío" else null
@@ -66,27 +55,15 @@ class LoginViewModel(
         _uiState.update { it.copy(isSubmitting = true) }
 
         viewModelScope.launch {
-
-            // --- ¡CAMBIO! YA NO SIMULAMOS ---
-            // 1. Buscamos al usuario en la BD
             val user = userRepository.findUserByEmail(state.email)
+            val loginSuccessful = user != null && user.password == state.password
 
-            // 2. Verificamos
-            val loginExitoso = (user != null && user.password == state.password)
-            // ---------------------------------
-
-            if (loginExitoso) {
-                // ¡ÉXITO!
-                if (state.rememberSession) {
-                    sessionPreferencesRepository.setRememberSession(true)
-                }
+            if (loginSuccessful) {
+                sessionPreferencesRepository.setRememberSession(state.rememberSession)
+                sessionPreferencesRepository.saveUserFullName(user!!.fullName)
                 _uiState.update { it.copy(isSubmitting = false, loginSuccess = true) }
             } else {
-                // ¡FALLO!
-                _uiState.update { it.copy(
-                    isSubmitting = false,
-                    generalError = "Correo o contraseña inválidos" // Mensaje de error del PDF [cite: 32]
-                )}
+                _uiState.update { it.copy(isSubmitting = false, generalError = "Correo o contraseña inválidos") }
             }
         }
     }
@@ -96,15 +73,13 @@ class LoginViewModel(
     }
 }
 
-// ¡CAMBIO! La "Fábrica" ahora pide los dos repositorios
 class LoginViewModelFactory(
     private val sessionPreferencesRepository: SessionPreferencesRepository,
-    private val userRepository: UserRepository // ¡CAMBIO!
+    private val userRepository: UserRepository
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            // ¡CAMBIO! Le pasamos ambos al ViewModel
             return LoginViewModel(sessionPreferencesRepository, userRepository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")

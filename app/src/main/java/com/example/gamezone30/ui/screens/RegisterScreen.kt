@@ -7,6 +7,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -20,7 +21,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -28,6 +31,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.gamezone30.ui.theme.*
 import com.example.gamezone30.viewmodel.RegisterViewModel
 import kotlinx.coroutines.delay
 
@@ -53,14 +57,18 @@ fun RegisterScreen(
     }
 
     Scaffold(
+        containerColor = DarkBackgroundColor,
         topBar = {
             TopAppBar(
-                title = { Text("Crear cuenta") },
+                title = { Text("Crear cuenta", color = LightTextColor) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Rounded.ArrowBack, "Volver")
+                        Icon(Icons.Rounded.ArrowBack, "Volver", tint = LightTextColor)
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = DarkBackgroundColor
+                )
             )
         }
     ) { paddingValues ->
@@ -72,21 +80,16 @@ fun RegisterScreen(
                 .padding(horizontal = 24.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.Top
         ) {
-
-            // ========================================================
-            // ¡¡AQUÍ ESTÁ EL CÓDIGO QUE FALTABA!!
-            // ========================================================
             AnimatedVisibility(
                 visible = uiState.registrationSuccess,
                 enter = fadeIn() + slideInVertically(initialOffsetY = { -it / 2 }),
                 exit = fadeOut() + slideOutVertically(targetOffsetY = { -it / 2 })
             ) {
-                // Usamos una Columna para que el Card y el Spacer se apilen
                 Column {
                     Card(
                         colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            containerColor = PrimaryColor,
+                            contentColor = DarkBackgroundColor
                         ),
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -105,7 +108,8 @@ fun RegisterScreen(
                             Column {
                                 Text(
                                     text = "¡Registro exitoso!",
-                                    style = MaterialTheme.typography.titleMedium
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
                                 )
                                 Text(
                                     text = "Estamos guardando tus datos...",
@@ -117,56 +121,47 @@ fun RegisterScreen(
                     Spacer(modifier = Modifier.height(24.dp))
                 }
             }
-            // ========================================================
-            // FIN DEL CÓDIGO NUEVO
-            // ========================================================
-
 
             Text(
                 text = "Completa tus datos para comenzar",
+                color = LightTextColor,
                 style = MaterialTheme.typography.titleLarge,
                 textAlign = TextAlign.Start
             )
             Spacer(modifier = Modifier.height(24.dp))
 
             // Nombre Completo
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
+            CustomOutlinedTextField(
                 value = uiState.fullName,
                 onValueChange = viewModel::onFullNameChange,
-                label = { Text("Nombre completo") },
-                leadingIcon = { Icon(Icons.Filled.Person, null) },
+                label = "Nombre completo",
+                leadingIcon = Icons.Filled.Person,
                 isError = uiState.nameError != null,
-                singleLine = true,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
             )
             FieldErrorMessage(uiState.nameError)
             Spacer(modifier = Modifier.height(12.dp))
 
             // Correo Electrónico
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
+            CustomOutlinedTextField(
                 value = uiState.email,
                 onValueChange = viewModel::onEmailChange,
-                label = { Text("Correo institucional (@duoc.cl)") },
-                leadingIcon = { Icon(Icons.Filled.Email, null) },
+                label = "Correo institucional (@duoc.cl)",
+                leadingIcon = Icons.Filled.Email,
                 isError = uiState.emailError != null,
-                singleLine = true,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next, keyboardType = KeyboardType.Email)
             )
             FieldErrorMessage(uiState.emailError)
             Spacer(modifier = Modifier.height(12.dp))
 
             // Contraseña
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
+            CustomOutlinedTextField(
                 value = uiState.password,
                 onValueChange = viewModel::onPasswordChange,
-                label = { Text("Contraseña") },
-                leadingIcon = { Icon(Icons.Filled.Lock, null) },
-                supportingText = { Text("10+ caracteres, 1 mayús, 1 minús, 1 núm, 1 especial") },
+                label = "Contraseña",
+                leadingIcon = Icons.Filled.Lock,
                 isError = uiState.passwordError != null,
-                singleLine = true,
+                supportingText = "10+ caracteres, 1 mayús, 1 minús, 1 núm, 1 especial",
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next, keyboardType = KeyboardType.Password)
             )
@@ -174,14 +169,12 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             // Confirmar Contraseña
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
+            CustomOutlinedTextField(
                 value = uiState.confirmPassword,
                 onValueChange = viewModel::onConfirmPasswordChange,
-                label = { Text("Confirmar contraseña") },
-                leadingIcon = { Icon(Icons.Filled.Lock, null) },
+                label = "Confirmar contraseña",
+                leadingIcon = Icons.Filled.Lock,
                 isError = uiState.confirmPasswordError != null,
-                singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next, keyboardType = KeyboardType.Password)
             )
@@ -189,21 +182,19 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             // Teléfono (Opcional)
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
+            CustomOutlinedTextField(
                 value = uiState.phone,
                 onValueChange = viewModel::onPhoneChange,
-                label = { Text("Teléfono (opcional)") },
-                leadingIcon = { Icon(Icons.Filled.Phone, null) },
+                label = "Teléfono (opcional)",
+                leadingIcon = Icons.Filled.Phone,
                 isError = uiState.phoneError != null,
-                singleLine = true,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done, keyboardType = KeyboardType.Phone)
             )
             FieldErrorMessage(uiState.phoneError)
             Spacer(modifier = Modifier.height(16.dp))
 
             // Géneros Favoritos (Checklist)
-            Text("Selecciona tus géneros de interés", style = MaterialTheme.typography.titleMedium)
+            Text("Selecciona tus géneros de interés", style = MaterialTheme.typography.titleMedium, color = LightTextColor)
             Spacer(modifier = Modifier.height(8.dp))
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 uiState.availableGenders.forEach { gender ->
@@ -216,9 +207,13 @@ fun RegisterScreen(
                             checked = isSelected,
                             onCheckedChange = { checked ->
                                 viewModel.onGenderToggled(gender, checked)
-                            }
+                            },
+                            colors = CheckboxDefaults.colors(
+                                checkedColor = PrimaryColor,
+                                uncheckedColor = SecondaryTextColor
+                            )
                         )
-                        Text(text = gender, style = MaterialTheme.typography.bodyMedium)
+                        Text(text = gender, style = MaterialTheme.typography.bodyMedium, color = LightTextColor)
                     }
                 }
             }
@@ -232,16 +227,69 @@ fun RegisterScreen(
                     focusManager.clearFocus(force = true)
                     viewModel.onSubmit()
                 },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = PrimaryColor,
+                    contentColor = DarkBackgroundColor
+                ),
+                shape = RoundedCornerShape(12.dp),
                 enabled = !uiState.isSubmitting
             ) {
                 if (uiState.isSubmitting) {
-                    CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = DarkBackgroundColor)
                 } else {
-                    Text("Crear cuenta", fontSize = 16.sp)
+                    Text("Crear cuenta", fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 }
             }
             Spacer(modifier = Modifier.height(24.dp))
         }
+    }
+}
+
+@Composable
+private fun CustomOutlinedTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    leadingIcon: androidx.compose.ui.graphics.vector.ImageVector,
+    isError: Boolean,
+    keyboardOptions: KeyboardOptions,
+    visualTransformation: androidx.compose.ui.text.input.VisualTransformation = androidx.compose.ui.text.input.VisualTransformation.None,
+    supportingText: String? = null
+) {
+    OutlinedTextField(
+        modifier = Modifier.fillMaxWidth(),
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label, color = SecondaryTextColor) },
+        leadingIcon = { Icon(leadingIcon, null, tint = SecondaryTextColor) },
+        isError = isError,
+        singleLine = true,
+        visualTransformation = visualTransformation,
+        keyboardOptions = keyboardOptions,
+        shape = RoundedCornerShape(12.dp),
+        colors = TextFieldDefaults.colors(
+            focusedTextColor = LightTextColor,
+            unfocusedTextColor = LightTextColor,
+            cursorColor = PrimaryColor,
+            focusedIndicatorColor = PrimaryColor,
+            unfocusedIndicatorColor = SecondaryTextColor.copy(alpha = 0.5f),
+            focusedContainerColor = TextFieldBackgroundColor,
+            unfocusedContainerColor = TextFieldBackgroundColor,
+            disabledContainerColor = TextFieldBackgroundColor,
+            focusedLabelColor = SecondaryTextColor,
+            unfocusedLabelColor = SecondaryTextColor,
+            focusedLeadingIconColor = SecondaryTextColor,
+            unfocusedLeadingIconColor = SecondaryTextColor
+        )
+
+    )
+    if (supportingText != null) {
+        Text(
+            text = supportingText,
+            color = SecondaryTextColor.copy(alpha = 0.8f),
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+        )
     }
 }
 

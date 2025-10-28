@@ -7,9 +7,11 @@ import com.example.gamezone30.data.session.SessionPreferencesRepository
 import com.example.gamezone30.navigation.AppScreens
 import com.example.gamezone30.navigation.NavigationEvent
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-
 
 class MainViewModel(
     private val sessionPreferencesRepository: SessionPreferencesRepository
@@ -18,9 +20,13 @@ class MainViewModel(
     private val _navigationEvents = MutableSharedFlow<NavigationEvent>()
     val navigationEvents = _navigationEvents.asSharedFlow()
 
-    /**
-     * La UI llama a esta función para pedir una navegación.
-     */
+    val userFullName: StateFlow<String?> = sessionPreferencesRepository.userFullNameFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = null
+        )
+
     fun navigateTo(
         route: AppScreens,
         popUpToRoute: AppScreens? = null,
@@ -39,9 +45,6 @@ class MainViewModel(
         }
     }
 
-    /**
-     * La UI llama a esta función para pedir "volver atrás".
-     */
     fun popBackStack() {
         viewModelScope.launch {
             _navigationEvents.emit(NavigationEvent.PopBackStack)
@@ -50,15 +53,10 @@ class MainViewModel(
 
     fun logOut() {
         viewModelScope.launch {
-            // 1. Le dice a DataStore que "olvide" la sesión
-            sessionPreferencesRepository.setRememberSession(false)
-
-            // 2. Navega a la pantalla de bienvenida
+            sessionPreferencesRepository.clearSession()
             _navigationEvents.emit(
                 NavigationEvent.NavigateTo(
                     route = AppScreens.Welcome,
-                    // ¡Importante! Limpiamos la pantalla "Home" del historial
-                    // para que el usuario no pueda "volver"
                     popUpToRoute = AppScreens.Home,
                     inclusive = true
                 )
@@ -66,7 +64,6 @@ class MainViewModel(
         }
     }
 }
-
 
 class MainViewModelFactory(
     private val sessionPreferencesRepository: SessionPreferencesRepository

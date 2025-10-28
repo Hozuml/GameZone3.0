@@ -1,9 +1,12 @@
 package com.example.gamezone30
 
+import android.net.Uri
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
@@ -35,13 +38,29 @@ class MainActivity : ComponentActivity() {
     private val database by lazy { AppDatabase.getInstance(applicationContext) }
     private val userRepository by lazy { UserRepository(database.userDao()) }
 
+    private val sharedViewModel: SharedViewModel by viewModels()
+
+    private lateinit var takePictureLauncher: ActivityResultLauncher<Uri>
+    private lateinit var selectImageLauncher: ActivityResultLauncher<String>
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-                enableEdgeToEdge()
+
+        takePictureLauncher = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+            if (success) {
+                sharedViewModel.setImageUri(sharedViewModel.imageUri.value)
+            }
+        }
+
+        selectImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            uri?.let {
+                sharedViewModel.setImageUri(it)
+            }
+        }
+
         setContent {
             GameZone30Theme {
                 val navController = rememberNavController()
-
 
                 val mainViewModel: MainViewModel = viewModel(
                     factory = remember {
@@ -49,19 +68,17 @@ class MainActivity : ComponentActivity() {
                     }
                 )
 
-                // 4. Lógica para "Recordar Sesión"
                 var startDestination by remember { mutableStateOf<String?>(null) }
 
                 LaunchedEffect(Unit) {
                     val rememberSession = sessionPreferencesRepository.rememberSessionFlow.first()
                     startDestination = if (rememberSession) {
-                        AppScreens.Home.route // Si sí, va directo a Home
+                        AppScreens.Home.route
                     } else {
-                        AppScreens.Welcome.route // Si no, va a la Bienvenida
+                        AppScreens.Welcome.route
                     }
                 }
 
-                // 5. "Escucha" los eventos de navegación del MainViewModel
                 LaunchedEffect(mainViewModel, navController) {
                     mainViewModel.navigationEvents.collectLatest { event ->
                         when (event) {
@@ -79,18 +96,15 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                // 6. Muestra un "Cargando" mientras revisa la sesión
                 if (startDestination == null) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator()
                     }
                 } else {
-                    // 7. ¡El NAVEGADOR! Aquí se definen todas las rutas
                     NavHost(
                         navController = navController,
-                        startDestination = startDestination!! // Inicia en la ruta que decidimos
+                        startDestination = startDestination!!
                     ) {
-                        // Pantalla de Bienvenida
                         composable(AppScreens.Welcome.route) {
                             WelcomeScreen(
                                 onLoginClick = { navController.navigate(AppScreens.Login.route) },
@@ -98,9 +112,7 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // Pantalla de Login
                         composable(AppScreens.Login.route) {
-                            // ¡Usamos la "Fábrica" para pasarle los repositorios!
                             val loginViewModel: LoginViewModel = viewModel(
                                 factory = remember {
                                     LoginViewModelFactory(sessionPreferencesRepository, userRepository)
@@ -110,7 +122,6 @@ class MainActivity : ComponentActivity() {
                                 viewModel = loginViewModel,
                                 onNavigateToHome = { rememberSession ->
                                     navController.navigate(AppScreens.Home.route) {
-                                        // Borra la pila de navegación para que no pueda "volver"
                                         popUpTo(navController.graph.startDestinationId) { inclusive = true }
                                         launchSingleTop = true
                                     }
@@ -121,36 +132,38 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // Pantalla de Registro
                         composable(AppScreens.Register.route) {
-                            // ¡Usamos la "Fábrica" para pasarle el repositorio!
                             val registerViewModel: RegisterViewModel = viewModel(
                                 factory = remember {
-                                    RegisterViewModelFactory(userRepository)
+                                    RegisterViewModelFactory(userRepository, sessionPreferencesRepository)
                                 }
                             )
                             RegisterScreen(
                                 viewModel = registerViewModel,
                                 onNavigateBack = { navController.popBackStack() },
                                 onRegistrationCompleted = {
-                                    // Vuelve al Login después de registrarse
                                     navController.popBackStack()
                                 }
                             )
                         }
 
-                        // Pantalla de Home
                         composable(AppScreens.Home.route) {
-                            // Le pasamos el MainViewModel para que pueda navegar
                             HomeScreen(viewModel = mainViewModel)
                         }
 
-                        // Pantallas del menú lateral (de ejemplo)
                         composable(AppScreens.Profile.route) {
-                            // TODO: Crear Pantalla de Perfil
-                        }
-                        composable(AppScreens.Settings.route) {
-                            // TODO: Crear Pantalla de Ajustes
+                            val profileViewModel: ProfileViewModel = viewModel(
+                                factory = remember {
+                                    ProfileViewModelFactory(userRepository, sessionPreferencesRepository)
+                                }
+                            )
+                            ProfileScreen(
+                                viewModel = profileViewModel,
+                                sharedViewModel = sharedViewModel,
+                                onNavigateBack = { navController.popBackStack() },
+                                onTakePhoto = { uri -> takePictureLauncher.launch(uri) },
+                                onSelectImage = { selectImageLauncher.launch("image/*") }
+                            )
                         }
                     }
                 }

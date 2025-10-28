@@ -18,7 +18,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.gamezone30.R // ¡Asegúrate de tener tu imagen 'home_app.jpeg' en res/drawable!
+import com.example.gamezone30.R
 
 @Composable
 fun WelcomeScreen(
@@ -32,14 +32,11 @@ fun WelcomeScreen(
             .fillMaxSize()
             .background(darkBackgroundColor)
     ) {
-        // Fondo de olas (tu imagen)
         Image(
-            painter = painterResource(id = R.drawable.home_app), // ¡Tu imagen renombrada!
+            painter = painterResource(id = R.drawable.home_app),
             contentDescription = null,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth(),
-            contentScale = ContentScale.FillWidth
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
         )
 
         // Contenido (Título y Botones)

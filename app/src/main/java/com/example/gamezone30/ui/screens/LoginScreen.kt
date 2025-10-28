@@ -1,6 +1,5 @@
 package com.example.gamezone30.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -26,6 +25,11 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.gamezone30.ui.theme.DarkBackgroundColor
+import com.example.gamezone30.ui.theme.LightTextColor
+import com.example.gamezone30.ui.theme.PrimaryColor
+import com.example.gamezone30.ui.theme.SecondaryTextColor
+import com.example.gamezone30.ui.theme.TextFieldBackgroundColor
 import com.example.gamezone30.viewmodel.LoginViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,13 +44,6 @@ fun LoginScreen(
     val scrollState = rememberScrollState()
     val focusManager = LocalFocusManager.current
 
-    // Colores del diseño
-    val darkBackgroundColor = Color(0xFF19192D)
-    val textFieldBackgroundColor = Color(0xFF2A2A4A)
-    val primaryColor = Color(0xFF00FFFF)
-    val lightTextColor = Color(0xFFF0F0F0)
-    val secondaryTextColor = Color(0xFFB0B0C0)
-
     // Navegación automática al tener éxito
     LaunchedEffect(uiState.loginSuccess) {
         if (uiState.loginSuccess) {
@@ -56,7 +53,7 @@ fun LoginScreen(
         }
     }
 
-    Scaffold(containerColor = darkBackgroundColor) { paddingValues ->
+    Scaffold(containerColor = DarkBackgroundColor) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -68,37 +65,37 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(64.dp))
 
             // Títulos
-            Text("GameZone", color = lightTextColor, fontSize = 48.sp, fontWeight = FontWeight.Bold)
-            Text("¡Bienvenido de vuelta!", color = lightTextColor, fontSize = 18.sp)
+            Text("GameZone", color = LightTextColor, fontSize = 48.sp, fontWeight = FontWeight.Bold)
+            Text("¡Bienvenido de vuelta!", color = LightTextColor, fontSize = 18.sp)
             Spacer(modifier = Modifier.height(48.dp))
 
             // Campo de Email
-            Text("Correo electrónico", color = lightTextColor, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Start)
+            Text("Correo electrónico", color = LightTextColor, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Start)
             Spacer(modifier = Modifier.height(8.dp))
             TextField(
                 value = uiState.email,
                 onValueChange = viewModel::onEmailChange,
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("tu.email@duoc.cl", color = secondaryTextColor) }, // ¡Pista clave!
-                leadingIcon = { Icon(Icons.Filled.Email, null, tint = secondaryTextColor) },
+                placeholder = { Text("tu.email@duoc.cl", color = SecondaryTextColor) }, // ¡Pista clave!
+                leadingIcon = { Icon(Icons.Filled.Email, null, tint = SecondaryTextColor) },
                 shape = RoundedCornerShape(12.dp),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
                 isError = uiState.emailError != null,
-                colors = getTextFieldColors(textFieldBackgroundColor, lightTextColor) // Colores personalizados
+                colors = getTextFieldColors(TextFieldBackgroundColor, LightTextColor) // Colores personalizados
             )
             FieldErrorMessage(uiState.emailError)
             Spacer(modifier = Modifier.height(24.dp))
 
             // Campo de Contraseña
-            Text("Contraseña", color = lightTextColor, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Start)
+            Text("Contraseña", color = LightTextColor, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Start)
             Spacer(modifier = Modifier.height(8.dp))
             TextField(
                 value = uiState.password,
                 onValueChange = viewModel::onPasswordChange,
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Introduce tu contraseña", color = secondaryTextColor) },
-                leadingIcon = { Icon(Icons.Filled.Lock, null, tint = secondaryTextColor) },
+                placeholder = { Text("Introduce tu contraseña", color = SecondaryTextColor) },
+                leadingIcon = { Icon(Icons.Filled.Lock, null, tint = SecondaryTextColor) },
                 trailingIcon = {
                     val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
@@ -110,7 +107,7 @@ fun LoginScreen(
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
                 isError = uiState.passwordError != null,
-                colors = getTextFieldColors(textFieldBackgroundColor, lightTextColor)
+                colors = getTextFieldColors(TextFieldBackgroundColor, LightTextColor)
             )
             FieldErrorMessage(uiState.passwordError)
 
@@ -126,14 +123,14 @@ fun LoginScreen(
                         checked = uiState.rememberSession,
                         onCheckedChange = viewModel::onRememberSessionChange,
                         colors = CheckboxDefaults.colors(
-                            checkedColor = primaryColor,
-                            uncheckedColor = secondaryTextColor
+                            checkedColor = PrimaryColor,
+                            uncheckedColor = SecondaryTextColor
                         )
                     )
-                    Text(text = "Recordar sesión", color = lightTextColor)
+                    Text(text = "Recordar sesión", color = LightTextColor)
                 }
                 TextButton(onClick = { /* TODO */ }) {
-                    Text("¿Olvidaste?", color = primaryColor, textAlign = TextAlign.End)
+                    Text("¿Olvidaste?", color = PrimaryColor, textAlign = TextAlign.End)
                 }
             }
             Spacer(modifier = Modifier.height(32.dp))
@@ -146,14 +143,14 @@ fun LoginScreen(
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = primaryColor,
-                    contentColor = darkBackgroundColor
+                    containerColor = PrimaryColor,
+                    contentColor = DarkBackgroundColor
                 ),
                 shape = RoundedCornerShape(12.dp),
                 enabled = !uiState.isSubmitting
             ) {
                 if (uiState.isSubmitting) {
-                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = darkBackgroundColor)
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = DarkBackgroundColor)
                 } else {
                     Text("Iniciar sesión", fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 }
@@ -163,9 +160,9 @@ fun LoginScreen(
 
             // Link de Registro
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("¿No tienes una cuenta? ", color = lightTextColor)
+                Text("¿No tienes una cuenta? ", color = LightTextColor)
                 TextButton(onClick = onNavigateToRegister) {
-                    Text("Regístrate", color = primaryColor, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Text("Regístrate", color = PrimaryColor, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 }
             }
         }
