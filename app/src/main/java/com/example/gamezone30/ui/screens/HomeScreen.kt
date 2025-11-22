@@ -74,10 +74,11 @@ fun HomeScreen(
 
     ModalNavigationDrawer(
         drawerState = drawerState,
-        // ESTRUCTURA CORREGIDA PARA AMBIGÜEDAD DE COMPOSABLES
         drawerContent = {
-            ModalDrawerSheet(containerColor = DarkBackgroundColor) {
-                // Columna explícita para resolver el error de "Composable invocations"
+
+            ModalDrawerSheet(
+                drawerContainerColor = DarkBackgroundColor
+            ) {
                 Column {
                     Text("GameZone Menú", modifier = Modifier.padding(16.dp), color = LightTextColor)
                     HorizontalDivider(color = SecondaryTextColor.copy(alpha = 0.5f))
@@ -147,7 +148,8 @@ fun HomeScreen(
             ) {
                 UserProfileCard(
                     userName = userName ?: "Usuario Invitado",
-                    userLocation = if (uiState.errorMessage != null) "Error de conexión" else "Catálogo Global",
+
+                    userLocation = uiState.weatherInfo,
                     onEditPhoto = { mainViewModel.navigateTo(AppScreens.Profile) }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
@@ -160,17 +162,12 @@ fun HomeScreen(
                     Text("ERROR: ${uiState.errorMessage}", color = Color.Red, fontSize = 18.sp, modifier = Modifier.padding(top = 24.dp))
                     Text("Revisa el servidor Spring Boot.", color = SecondaryTextColor)
                 } else {
-                    // --- MOSTRAR LOS DOS CATÁLOGOS (Punto I y J) ---
-
                     // 1. Catálogo Local (Tu Microservicio - Punto I)
                     SectionHeader(title = "Tu Catálogo (Microservicio Propio)", count = uiState.localGameList.size)
                     GameList(games = uiState.localGameList)
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // 2. Noticias/Juegos Populares (API Externa - Punto J)
-                    SectionHeader(title = "Juegos Destacados (API Externa)", count = uiState.externalNews.size, color = Color.Green)
-                    GameList(games = uiState.externalNews)
                 }
             }
         }

@@ -8,6 +8,7 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
+import retrofit2.http.Query
 import retrofit2.http.Url
 
 interface ApiService {
@@ -27,6 +28,9 @@ interface ApiService {
     @GET("games")
     suspend fun obtenerJuegos(): Response<List<Game>>
 
+    @POST("games")
+    suspend fun createGame(@Body game: Game): Response<Game>
+
     @GET
-    suspend fun getExternalGames(@Url fullUrl: String): Response<ExternalGameListResponse>
+    suspend fun getWeather(@Url url: String): Response<WeatherResponse>
 }
