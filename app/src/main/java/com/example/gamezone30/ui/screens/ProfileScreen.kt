@@ -202,11 +202,13 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.weight(1f))
 
             Button(
-                onClick = { locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) },
+                onClick = {
+                    locationPermissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
+                },
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor)
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Cyan)
             ) {
-                Text("Actualizar Ubicación", color = DarkBackgroundColor, fontWeight = FontWeight.Bold)
+                Text("Actualizar Ubicación", color = Color.Black, fontWeight = FontWeight.Bold)
             }
             TextButton(onClick = { /* TODO */ }) {
                 Text("Cerrar Sesión", color = Color.Red)
