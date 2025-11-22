@@ -1,19 +1,18 @@
 package com.example.gamezone30.viewmodel
 
 import android.content.Context
-import android.location.Address
 import android.location.Geocoder
 import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.gamezone30.data.local.dao.entity.User
 import com.example.gamezone30.data.repository.UserRepository
 import com.example.gamezone30.data.session.SessionPreferencesRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -21,8 +20,10 @@ data class ProfileUiState(
     val fullName: String = "",
     val email: String = "",
     val phone: String = "",
-    val favoriteGenres: List<String> = emptyList(),
+    // CAMBIO 1: Ahora se llama 'location' para que coincida con tu pantalla
     val location: String = "",
+    // CAMBIO 2: Agregamos la lista de géneros que faltaba
+    val favoriteGenres: List<String> = emptyList(),
     val isEditing: Boolean = false
 )
 
@@ -36,59 +37,67 @@ class ProfileViewModel(
 
     init {
         viewModelScope.launch {
-            combine(
-                userRepository.getUser(),
-                sessionPreferencesRepository.userFullNameFlow
-            ) { user: User?, fullName: String? ->
-                _uiState.value = ProfileUiState(
-                    fullName = user?.fullName ?: fullName ?: "",
-                    email = user?.email ?: "",
-                    phone = user?.phone ?: "",
-                    favoriteGenres = user?.favoriteGenres ?: emptyList()
-                )
-            }.collect()
+            sessionPreferencesRepository.userFullNameFlow.collectLatest { name ->
+                // Usamos el operador Elvis (?:) para evitar nulos
+                _uiState.update { it.copy(fullName = name ?: "") }
+            }
         }
     }
+
+    // --- FUNCIONES DE EDICIÓN ---
 
     fun onEditToggled() {
-        _uiState.value = _uiState.value.copy(isEditing = !_uiState.value.isEditing)
+        _uiState.update { it.copy(isEditing = !it.isEditing) }
     }
 
-    fun onFullNameChanged(fullName: String) {
-        _uiState.value = _uiState.value.copy(fullName = fullName)
+    fun onFullNameChanged(newName: String) {
+        _uiState.update { it.copy(fullName = newName) }
     }
 
-    fun onPhoneChanged(phone: String) {
-        _uiState.value = _uiState.value.copy(phone = phone)
-    }
-
-    fun onLocationChanged(location: String) {
-        _uiState.value = _uiState.value.copy(location = location)
-    }
-
-    fun getAddressFromCoordinates(context: Context, latitude: Double, longitude: Double) {
-        val geocoder = Geocoder(context, Locale.getDefault())
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            geocoder.getFromLocation(latitude, longitude, 1) { addresses ->
-                val address = addresses.firstOrNull()
-                onLocationChanged(address?.locality ?: "")
-            }
-        } else {
-            val addresses = geocoder.getFromLocation(latitude, longitude, 1)
-            val address = addresses?.firstOrNull()
-            onLocationChanged(address?.locality ?: "")
-        }
+    fun onPhoneChanged(newPhone: String) {
+        _uiState.update { it.copy(phone = newPhone) }
     }
 
     fun onSaveChanges() {
+        updateUser(_uiState.value.fullName, _uiState.value.phone)
+        onEditToggled()
+    }
+
+    // --- LÓGICA DE NEGOCIO ---
+
+    private fun updateUser(fullName: String, phone: String) {
         viewModelScope.launch {
-            val updatedUser = _uiState.value
-            userRepository.updateUser(
-                fullName = updatedUser.fullName,
-                phone = updatedUser.phone
-            )
-            sessionPreferencesRepository.saveUserFullName(updatedUser.fullName)
-            onEditToggled()
+            sessionPreferencesRepository.saveUserFullName(fullName)
+            _uiState.update { it.copy(fullName = fullName, phone = phone) }
+        }
+    }
+
+    // --- FUNCIÓN GPS (Ahora actualiza 'location') ---
+    fun getAddressFromCoordinates(context: Context, lat: Double, long: Double) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val geocoder = Geocoder(context, Locale.getDefault())
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    geocoder.getFromLocation(lat, long, 1) { addresses ->
+                        if (addresses.isNotEmpty()) {
+                            val addressLine = addresses[0].getAddressLine(0)
+                            // Aquí actualizamos 'location'
+                            _uiState.update { it.copy(location = addressLine) }
+                        }
+                    }
+                } else {
+                    @Suppress("DEPRECATION")
+                    val addresses = geocoder.getFromLocation(lat, long, 1)
+                    if (!addresses.isNullOrEmpty()) {
+                        val addressLine = addresses[0].getAddressLine(0)
+                        // Aquí actualizamos 'location'
+                        _uiState.update { it.copy(location = addressLine) }
+                    }
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(location = "Ubicación no encontrada") }
+            }
         }
     }
 }

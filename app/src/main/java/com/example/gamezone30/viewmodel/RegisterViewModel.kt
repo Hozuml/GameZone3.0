@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+// El estado de la UI se mantiene igual, ¡excelente estructura!
 data class RegisterUiState(
     val fullName: String = "",
     val email: String = "",
@@ -30,7 +31,7 @@ data class RegisterUiState(
     val phoneError: String? = null,
     val genderError: String? = null,
     val generalError: String? = null,
-    val isEmailChecking: Boolean = false,
+    val isEmailChecking: Boolean = false, // Esto ahora será visual solamente
     val isSubmitting: Boolean = false,
     val registrationSuccess: Boolean = false
 )
@@ -51,11 +52,13 @@ class RegisterViewModel(
     }
 
     fun onEmailChange(email: String) {
-        _uiState.update { it.copy(email = email, emailError = null, generalError = null, isEmailChecking = true) }
+        // Quitamos el "isEmailChecking = true" porque ya no consultamos a la BD local
+        _uiState.update { it.copy(email = email, emailError = null, generalError = null) }
         emailCheckJob?.cancel()
         emailCheckJob = viewModelScope.launch {
+            // Mantenemos el delay para validar el REGEX sin molestar al usuario mientras escribe
             delay(800)
-            validateEmail(email, checkAvailability = true)
+            validateEmail(email)
         }
     }
 
@@ -86,6 +89,8 @@ class RegisterViewModel(
         _uiState.update { it.copy(registrationSuccess = false) }
     }
 
+    // --- VALIDACIONES LOCALES ---
+
     private fun validateName(name: String = _uiState.value.fullName): Boolean {
         val nameRegex = Regex("^[a-zA-Z ]+$")
         val error = when {
@@ -98,13 +103,14 @@ class RegisterViewModel(
         return error == null
     }
 
-    private suspend fun validateEmail(email: String = _uiState.value.email, checkAvailability: Boolean = false): Boolean {
+    // CAMBIO IMPORTANTE: Quitamos 'checkAvailability'.
+    // Ahora solo validamos formato @duoc.cl. La unicidad la valida el servidor al enviar.
+    private fun validateEmail(email: String = _uiState.value.email): Boolean {
         val emailRegex = Regex("^[A-Za-z0-9._%+-]+@duoc\\.cl$")
         val error = when {
             email.isBlank() -> "El correo no puede estar vacío"
             !email.matches(emailRegex) -> "Debe ser un correo @duoc.cl"
             email.length > 60 -> "Máximo 60 caracteres"
-            checkAvailability && userRepository.isEmailRegistered(email) -> "Este correo ya está registrado"
             else -> null
         }
         _uiState.update { it.copy(emailError = error, isEmailChecking = false) }
@@ -147,40 +153,58 @@ class RegisterViewModel(
         return error == null
     }
 
+    // --- ENVÍO AL SERVIDOR (CAMBIO PRINCIPAL) ---
+
     fun onSubmit() {
+        println("DEBUG: 1. Se presionó el botón Enviar") // <--- Chismoso 1
+
         viewModelScope.launch {
+            // 1. Validaciones locales
             val isNameValid = validateName()
-            val isEmailValid = validateEmail(checkAvailability = true)
+            val isEmailValid = validateEmail()
             val isPasswordValid = validatePassword()
             val isConfirmValid = validateConfirmPassword()
             val isPhoneValid = validatePhone()
             val areGendersValid = validateGenders()
 
             if (!isNameValid || !isEmailValid || !isPasswordValid || !isConfirmValid || !isPhoneValid || !areGendersValid) {
+                println("DEBUG: 2. Falló alguna validación local") // <--- Chismoso 2
+                // Imprimimos qué falló para saber
+                if (!isNameValid) println("DEBUG: Falló Nombre")
+                if (!isEmailValid) println("DEBUG: Falló Email")
+                if (!isPasswordValid) println("DEBUG: Falló Password")
+                if (!isConfirmValid) println("DEBUG: Falló Confirmar Password")
+                if (!isPhoneValid) println("DEBUG: Falló Teléfono")
+                if (!areGendersValid) println("DEBUG: Falló Géneros")
                 return@launch
             }
 
-            _uiState.update { it.copy(isSubmitting = true) }
+            println("DEBUG: 3. Validaciones OK. Preparando envío...") // <--- Chismoso 3
+            _uiState.update { it.copy(isSubmitting = true, generalError = null) }
 
-            try {
-                val newUser = User(
-                    fullName = _uiState.value.fullName,
-                    email = _uiState.value.email,
-                    password = _uiState.value.password,
-                    phone = _uiState.value.phone.takeIf { it.isNotBlank() },
-                    favoriteGenres = _uiState.value.selectedGenders.toList()
-                )
-                userRepository.registerUser(newUser)
+            val newUser = User(
+                email = _uiState.value.email,
+                fullName = _uiState.value.fullName,
+                password = _uiState.value.password,
+                phone = _uiState.value.phone.takeIf { it.isNotBlank() },
+                favoriteGenres = _uiState.value.selectedGenders.toList()
+            )
+
+            println("DEBUG: 4. Llamando al repositorio...") // <--- Chismoso 4
+            val result = userRepository.registerUser(newUser)
+
+            if (result.isSuccess) {
+                println("DEBUG: 5. ¡ÉXITO! El servidor respondió bien") // <--- Chismoso 5
                 sessionPreferencesRepository.saveUserFullName(_uiState.value.fullName)
-
                 _uiState.update { it.copy(isSubmitting = false, registrationSuccess = true) }
-            } catch (e: Exception) {
-                _uiState.update { it.copy(isSubmitting = false, generalError = "Error al registrar: ${e.message}") }
+            } else {
+                val mensajeError = result.exceptionOrNull()?.message ?: "Error desconocido"
+                println("DEBUG: 6. ERROR DEL SERVIDOR: $mensajeError") // <--- Chismoso 6
+                _uiState.update { it.copy(isSubmitting = false, generalError = mensajeError) }
             }
         }
     }
 }
-
 class RegisterViewModelFactory(
     private val userRepository: UserRepository,
     private val sessionPreferencesRepository: SessionPreferencesRepository

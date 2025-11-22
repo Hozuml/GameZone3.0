@@ -1,6 +1,7 @@
 package com.example.gamezone30.ui.screens
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -54,6 +55,7 @@ fun ProfileScreen(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = @androidx.annotation.RequiresPermission(allOf = [android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION]) { isGranted ->
             if (isGranted) {
+                @SuppressLint("MissingPermission")
                 fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                     location?.let {
                         viewModel.getAddressFromCoordinates(context, it.latitude, it.longitude)

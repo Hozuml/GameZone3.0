@@ -6,11 +6,11 @@ import androidx.lifecycle.viewModelScope
 import com.example.gamezone30.data.repository.UserRepository
 import com.example.gamezone30.data.session.SessionPreferencesRepository
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+// Estado de la UI del Login
 data class LoginUiState(
     val email: String = "",
     val password: String = "",
@@ -28,7 +28,7 @@ class LoginViewModel(
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
-    val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
+    val uiState = _uiState.asStateFlow()
 
     fun onEmailChange(email: String) {
         _uiState.update { it.copy(email = email, emailError = null, generalError = null) }
@@ -38,32 +38,51 @@ class LoginViewModel(
         _uiState.update { it.copy(password = password, passwordError = null, generalError = null) }
     }
 
-    fun onRememberSessionChange(remember: Boolean) {
-        _uiState.update { it.copy(rememberSession = remember) }
+    fun onRememberSessionChange(isChecked: Boolean) {
+        _uiState.update { it.copy(rememberSession = isChecked) }
     }
 
+    // --- LÓGICA NUEVA CON SERVIDOR ---
     fun onSubmit() {
         val state = _uiState.value
-        val emailError = if (state.email.isBlank()) "El correo no puede estar vacío" else null
-        val passwordError = if (state.password.isBlank()) "La contraseña no puede estar vacía" else null
+
+        // 1. Validaciones básicas locales (que no estén vacíos)
+        val emailError = if (state.email.isBlank()) "Ingresa tu correo" else null
+        val passwordError = if (state.password.isBlank()) "Ingresa tu contraseña" else null
 
         if (emailError != null || passwordError != null) {
             _uiState.update { it.copy(emailError = emailError, passwordError = passwordError) }
             return
         }
 
-        _uiState.update { it.copy(isSubmitting = true) }
+        // 2. Iniciamos carga
+        _uiState.update { it.copy(isSubmitting = true, generalError = null) }
 
         viewModelScope.launch {
-            val user = userRepository.findUserByEmail(state.email)
-            val loginSuccessful = user != null && user.password == state.password
+            try {
+                // 3. LLAMAMOS AL SERVIDOR (Aquí estaba el error antes)
+                // Ahora usamos .login() que devuelve un Result<User>
+                val result = userRepository.login(state.email, state.password)
 
-            if (loginSuccessful) {
-                sessionPreferencesRepository.setRememberSession(state.rememberSession)
-                sessionPreferencesRepository.saveUserFullName(user!!.fullName)
-                _uiState.update { it.copy(isSubmitting = false, loginSuccess = true) }
-            } else {
-                _uiState.update { it.copy(isSubmitting = false, generalError = "Correo o contraseña inválidos") }
+                if (result.isSuccess) {
+                    // ¡Login Correcto!
+                    val user = result.getOrNull()
+
+                    // Guardamos la sesión localmente (DataStore)
+                    sessionPreferencesRepository.saveUserFullName(user?.fullName ?: "Usuario")
+                    if (state.rememberSession) {
+                        sessionPreferencesRepository.setRememberSession(true)
+                    }
+
+                    // Avisamos a la vista que navegue
+                    _uiState.update { it.copy(isSubmitting = false, loginSuccess = true) }
+                } else {
+                    // ¡Error! (Credenciales malas o sin internet)
+                    val errorMsg = result.exceptionOrNull()?.message ?: "Error al iniciar sesión"
+                    _uiState.update { it.copy(isSubmitting = false, generalError = errorMsg) }
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isSubmitting = false, generalError = "Error desconocido: ${e.message}") }
             }
         }
     }
@@ -73,6 +92,7 @@ class LoginViewModel(
     }
 }
 
+// Factory para inyectar repositorios
 class LoginViewModelFactory(
     private val sessionPreferencesRepository: SessionPreferencesRepository,
     private val userRepository: UserRepository

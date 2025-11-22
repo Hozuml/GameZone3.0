@@ -17,7 +17,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.gamezone30.data.local.dao.database.AppDatabase
 import com.example.gamezone30.data.repository.UserRepository
 import com.example.gamezone30.data.session.SessionPreferencesRepository
 import com.example.gamezone30.data.session.sessionDataStore
@@ -35,8 +34,11 @@ class MainActivity : ComponentActivity() {
         SessionPreferencesRepository(applicationContext.sessionDataStore)
     }
 
-    private val database by lazy { AppDatabase.getInstance(applicationContext) }
-    private val userRepository by lazy { UserRepository(database.userDao()) }
+    // --- CORRECCIÓN AQUÍ ---
+    // Antes: Usabas database.userDao()
+    // Ahora: UserRepository se instancia directo (se conecta solo a la API)
+    private val userRepository by lazy { UserRepository() }
+    // -----------------------
 
     private val sharedViewModel: SharedViewModel by viewModels()
 
