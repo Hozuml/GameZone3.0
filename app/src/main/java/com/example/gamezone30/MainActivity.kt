@@ -17,6 +17,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.gamezone30.data.repository.GameRepository // NUEVO: Importar GameRepository
 import com.example.gamezone30.data.repository.UserRepository
 import com.example.gamezone30.data.session.SessionPreferencesRepository
 import com.example.gamezone30.data.session.sessionDataStore
@@ -34,11 +35,10 @@ class MainActivity : ComponentActivity() {
         SessionPreferencesRepository(applicationContext.sessionDataStore)
     }
 
-    // --- CORRECCIÓN AQUÍ ---
-    // Antes: Usabas database.userDao()
-    // Ahora: UserRepository se instancia directo (se conecta solo a la API)
     private val userRepository by lazy { UserRepository() }
-    // -----------------------
+
+    // NUEVO: Instancia del GameRepository para la Home Screen
+    private val gameRepository by lazy { GameRepository() }
 
     private val sharedViewModel: SharedViewModel by viewModels()
 
@@ -64,13 +64,23 @@ class MainActivity : ComponentActivity() {
             GameZone30Theme {
                 val navController = rememberNavController()
 
+                // El MainViewModel sigue siendo para navegación y sesión global
                 val mainViewModel: MainViewModel = viewModel(
                     factory = remember {
                         MainViewModelFactory(sessionPreferencesRepository)
                     }
                 )
 
+                // NUEVO: Instanciamos el HomeViewModel para cargar los juegos
+                val homeViewModel: HomeViewModel = viewModel(
+                    factory = remember {
+                        HomeViewModelFactory(gameRepository, sessionPreferencesRepository)
+                    }
+                )
+
+
                 var startDestination by remember { mutableStateOf<String?>(null) }
+                // ... (el resto de LaunchedEffects y lógica de navegación...)
 
                 LaunchedEffect(Unit) {
                     val rememberSession = sessionPreferencesRepository.rememberSessionFlow.first()
@@ -150,7 +160,7 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable(AppScreens.Home.route) {
-                            HomeScreen(viewModel = mainViewModel)
+                            HomeScreen(viewModel = homeViewModel, mainViewModel = mainViewModel)
                         }
 
                         composable(AppScreens.Profile.route) {

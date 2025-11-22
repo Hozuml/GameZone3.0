@@ -9,12 +9,14 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="be7dce40-3c7e-48d2-b295-02654e349ce9" name="Changes" comment="Integración de SpringBoot en el Backend y BDD externa MySQL">
-      <change afterPath="$PROJECT_DIR$/backend/src/main/kotlin/cl/caa/soto/gamezone/controller/GameController.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/kotlin/cl/caa/soto/gamezone/model/Game.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/kotlin/cl/caa/soto/gamezone/repository/GameRepository.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/kotlin/cl/caa/soto/gamezone/service/GameService.kt" afterDir="false" />
+    <list default="true" id="be7dce40-3c7e-48d2-b295-02654e349ce9" name="Changes" comment="Agregar entidades User y Game, y sus controller - repository - service">
+      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/example/gamezone30/network/ExternalGameListResponse.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/example/gamezone30/viewmodel/HomeViewModel.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/gamezone30/MainActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/gamezone30/MainActivity.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/gamezone30/data/repository/GameRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/gamezone30/data/repository/GameRepository.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/gamezone30/network/ApiService.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/gamezone30/network/ApiService.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/gamezone30/ui/screens/HomeScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/gamezone30/ui/screens/HomeScreen.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -37,6 +39,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Kotlin Interface" />
+        <option value="Kotlin File" />
         <option value="Kotlin Class" />
       </list>
     </option>
@@ -55,12 +58,22 @@
     &quot;assignee&quot;: &quot;Bastiannsp&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/Hozuml/GameZone3.0.git&quot;,
-    &quot;accountId&quot;: &quot;55d276f9-9457-4d82-8846-d3d7fcaa9cd2&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/Hozuml/GameZone3.0.git",
+    "accountId": "55d276f9-9457-4d82-8846-d3d7fcaa9cd2"
+  },
+  "recentNewPullRequestHead": {
+    "server": {
+      "useHttp": false,
+      "host": "github.com",
+      "port": null,
+      "suffix": null
+    },
+    "owner": "Hozuml",
+    "repository": "GameZone3.0"
   }
-}</component>
+}]]></component>
   <component name="GradleScriptDefinitionsStorage" workingDir="$PROJECT_DIR$" gradleHome="C:\Users\camil\.gradle\wrapper\dists\gradle-8.13-bin\5xuhj0ry160q40clulazy9h7d\gradle-8.13" javaHome="C:\Users\camil\.jdks\ms-21.0.7" gradleVersion="8.13" />
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 0
@@ -189,7 +202,7 @@
       <updated>1761325062886</updated>
       <workItem from="1763763906043" duration="71000" />
       <workItem from="1763764231245" duration="5630000" />
-      <workItem from="1763770228765" duration="7929000" />
+      <workItem from="1763770228765" duration="10519000" />
     </task>
     <task id="LOCAL-00001" summary="Integración de SpringBoot en el Backend y BDD externa MySQL">
       <option name="closed" value="true" />
@@ -199,7 +212,15 @@
       <option name="project" value="LOCAL" />
       <updated>1763776592290</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Agregar entidades User y Game, y sus controller - repository - service">
+      <option name="closed" value="true" />
+      <created>1763778485762</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1763778485762</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -208,6 +229,7 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="V3" />
     <MESSAGE value="Integración de SpringBoot en el Backend y BDD externa MySQL" />
-    <option name="LAST_COMMIT_MESSAGE" value="Integración de SpringBoot en el Backend y BDD externa MySQL" />
+    <MESSAGE value="Agregar entidades User y Game, y sus controller - repository - service" />
+    <option name="LAST_COMMIT_MESSAGE" value="Agregar entidades User y Game, y sus controller - repository - service" />
   </component>
 </project>
