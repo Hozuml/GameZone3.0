@@ -1,5 +1,6 @@
 package com.example.gamezone30.network
 
+import com.example.gamezone30.data.local.dao.entity.Game
 import com.example.gamezone30.data.local.dao.entity.User
 import retrofit2.Response
 import retrofit2.http.Body
@@ -19,7 +20,9 @@ interface ApiService {
     @POST("users/login")
     suspend fun login(@Body credenciales: Map<String, String>): Response<User>
 
-    // --- NUEVO: Para actualizar perfil ---
     @PUT("users/{id}")
     suspend fun actualizarUsuario(@Path("id") id: Long, @Body user: User): Response<User>
+
+    @GET("games")
+    suspend fun obtenerJuegos(): Response<List<Game>>
 }
