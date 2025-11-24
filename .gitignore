@@ -5,9 +5,6 @@
 **/build/
 **/.gradle/
 
-# Gradle wrapper
-gradle-wrapper.jar
-
 # Compiled class files
 *.class
 
@@ -21,6 +18,10 @@ gradle-wrapper.jar
 *.zip
 *.tar.gz
 *.rar
+
+# But keep gradle wrapper jar
+!gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.jar
 
 # IDE files
 .idea/
