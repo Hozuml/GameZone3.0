@@ -21,3 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "GameZone3.0"
 include(":app")
+include(":backend")
