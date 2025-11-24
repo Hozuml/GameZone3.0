@@ -2,13 +2,16 @@ plugins {
     kotlin("jvm") version "2.0.21"
     kotlin("plugin.spring") version "2.0.21"
     kotlin("plugin.jpa") version "2.0.21"
-    id("org.springframework.boot") version "3.2.0"
-    id("io.spring.dependency-management") version "1.1.4"
+    id("org.springframework.boot") version "3.3.5"
+    id("io.spring.dependency-management") version "1.1.6"
 }
 
 group = "cl.caa.soto"
 version = "1.0.0"
-java.sourceCompatibility = JavaVersion.VERSION_17
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+}
 
 repositories {
     mavenCentral()
@@ -31,10 +34,9 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions {
-        freeCompilerArgs = listOf("-Xjsr305=strict")
-        jvmTarget = "17"
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.add("-Xjsr305=strict")
     }
 }
 
