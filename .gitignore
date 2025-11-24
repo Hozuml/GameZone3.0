@@ -1,2 +1,38 @@
 # Project exclude paths
 /.gradle/
+
+# Gradle build directories
+**/build/
+**/.gradle/
+
+# Gradle wrapper
+gradle-wrapper.jar
+
+# Compiled class files
+*.class
+
+# Log files
+*.log
+
+# Package Files
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# IDE files
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+
+# OS files
+.DS_Store
+desktop.ini
+Thumbs.db
+
+# Local properties
+local.properties
