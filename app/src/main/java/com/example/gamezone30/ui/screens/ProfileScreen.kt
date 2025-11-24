@@ -29,6 +29,7 @@ import com.example.gamezone30.ui.theme.DarkBackgroundColor
 import com.example.gamezone30.ui.theme.LightTextColor
 import com.example.gamezone30.ui.theme.PrimaryColor
 import com.example.gamezone30.ui.theme.SecondaryTextColor
+import com.example.gamezone30.viewmodel.MainViewModel
 import com.example.gamezone30.viewmodel.ProfileViewModel
 import com.example.gamezone30.viewmodel.SharedViewModel
 import com.google.android.gms.location.LocationServices
@@ -41,6 +42,7 @@ import androidx.core.content.FileProvider
 fun ProfileScreen(
     viewModel: ProfileViewModel,
     sharedViewModel: SharedViewModel,
+    mainViewModel: MainViewModel,
     onNavigateBack: () -> Unit,
     onTakePhoto: (Uri) -> Unit,
     onSelectImage: () -> Unit
@@ -210,7 +212,7 @@ fun ProfileScreen(
             ) {
                 Text("Actualizar Ubicación", color = Color.Black, fontWeight = FontWeight.Bold)
             }
-            TextButton(onClick = { /* TODO */ }) {
+            TextButton(onClick = { mainViewModel.logOut() }) {
                 Text("Cerrar Sesión", color = Color.Red)
             }
         }

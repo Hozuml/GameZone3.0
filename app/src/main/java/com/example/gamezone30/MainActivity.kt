@@ -172,6 +172,7 @@ class MainActivity : ComponentActivity() {
                             ProfileScreen(
                                 viewModel = profileViewModel,
                                 sharedViewModel = sharedViewModel,
+                                mainViewModel = mainViewModel,
                                 onNavigateBack = { navController.popBackStack() },
                                 onTakePhoto = { uri -> takePictureLauncher.launch(uri) },
                                 onSelectImage = { selectImageLauncher.launch("image/*") }
